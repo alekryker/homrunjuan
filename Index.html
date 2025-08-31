@@ -1,0 +1,641 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>homrunjuan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- QR Scanner -->
+  <script src="https://unpkg.com/html5-qrcode" defer></script>
+  <style>
+    :root{
+      --bg:#fafafa; --card:#fff; --text:#222; --muted:#888; --accent:#ff3c8f;
+      --accent2:#5851db; --accent3:#833ab4; --success:#10b981; --warn:#f59e0b; --danger:#ef4444;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Prompt',system-ui,-apple-system; background:var(--bg); color:var(--text)}
+    .app{
+      max-width:1100px; margin:0 auto; padding-bottom:80px;
+    }
+    header{
+      position:sticky; top:0; z-index:20; background:linear-gradient(90deg,var(--accent3),var(--accent2),var(--accent));
+      color:#fff; padding:14px 18px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 16px rgba(0,0,0,.12);
+    }
+    header .logo{font-weight:700; letter-spacing:.5px; font-size:20px}
+    .tabs{ display:flex; gap:8px; padding:12px; overflow:auto; background:#fff; border-bottom:1px solid #eee; }
+    .tab{ flex:0 0 auto; padding:10px 14px; border-radius:999px; background:#f2f2f2; color:#555; cursor:pointer; font-weight:500; }
+    .tab.active{ background:linear-gradient(90deg,var(--accent3),var(--accent)); color:#fff }
+    main{ padding:16px; }
+    .card{ background:var(--card); border:1px solid #eee; border-radius:var(--radius); padding:16px; box-shadow:0 6px 24px rgba(0,0,0,.06); }
+    .grid{ display:grid; gap:12px }
+    .grid-2{ grid-template-columns:repeat(2,minmax(0,1fr)) }
+    .grid-3{ grid-template-columns:repeat(3,minmax(0,1fr)) }
+    .grid-4{ grid-template-columns:repeat(4,minmax(0,1fr)) }
+    @media(max-width:900px){ .grid-4{grid-template-columns:repeat(2,1fr)} .grid-3{grid-template-columns:repeat(2,1fr)} }
+    @media(max-width:640px){ .grid-2{grid-template-columns:1fr} }
+    label{ font-size:12px; color:var(--muted) }
+    input,select,button,textarea{ font-family:inherit }
+    input,select,textarea{
+      width:100%; padding:12px 12px; border:1px solid #e5e7eb; border-radius:12px; outline:none; background:#fff;
+    }
+    input:focus,select:focus,textarea:focus{ border-color:#d946ef; box-shadow:0 0 0 3px rgba(217,70,239,.15) }
+    .btn{ padding:10px 14px; border:none; border-radius:12px; cursor:pointer; font-weight:600 }
+    .btn.primary{ background:linear-gradient(90deg,var(--accent3),var(--accent)); color:#fff }
+    .btn.ghost{ background:#f2f2f2 }
+    .btn.warn{ background:var(--warn); color:#fff }
+    .btn.danger{ background:var(--danger); color:#fff }
+    .toolbar{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+    .table{ width:100%; border-collapse:separate; border-spacing:0 8px }
+    .table th{ text-align:left; font-size:12px; color:var(--muted) }
+    .table td{ background:#fff; border:1px solid #eee; padding:10px 12px }
+    .pill{ display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:600 }
+    .pill.low{ background:#fff7ed; color:#b45309; border:1px solid #fed7aa }
+    .right{ text-align:right }
+    .muted{ color:var(--muted) }
+    .hr{ height:1px; background:#eee; margin:12px 0 }
+    .storybar{ display:flex; gap:10px; padding:12px 6px }
+    .story{ width:64px; height:64px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:999px; padding:3px }
+    .story>div{ background:#fff; width:100%; height:100%; border-radius:999px; display:flex; align-items:center; justify-content:center; font-weight:700; }
+
+    
+
+    .chipbar{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:8px 12px;border-radius:999px;background:#f3f4f6;border:1px solid #e5e7eb;cursor:pointer}
+.chip.active{background:linear-gradient(90deg,#833ab4,#ff3c8f);color:#fff;border-color:transparent}
+
+
+    /* Modal for QR */
+    .modal{ position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:center; justify-content:center; z-index:50 }
+    .modal .inner{ width:min(560px,92vw); background:#fff; border-radius:16px; padding:16px }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <span class="material-icons">inventory_2</span>
+      <div class="logo">homrunjuan</div>
+    </header>
+
+    <!-- Instagram-like story bar (just for vibe) -->
+    <!-- <div class="storybar">
+      <div class="story"><div>PRD</div></div>
+      <div class="story"><div>SALE</div></div>
+      <div class="story"><div>BUY</div></div>
+      <div class="story"><div>STOCK</div></div>
+      <div class="story"><div>REP</div></div>
+    </div> -->
+
+    <div class="tabs" id="tabs"></div>
+
+    <main>
+      <!-- ----------------- ข้อมูลสินค้า ----------------- -->
+      <section class="card" data-tab="products">
+        <h3>ข้อมูลสินค้า</h3>
+        <div class="grid grid-3">
+          <div>
+            <label>รหัสสินค้า</label>
+            <div class="toolbar">
+              <input id="p_code" placeholder="เช่น MILK001" />
+              <button class="btn ghost" onclick="openQr('p_code')"><span class="material-icons">qr_code_scanner</span></button>
+            </div>
+          </div>
+          <div>
+            <label>ชื่อสินค้า</label>
+            <input id="p_name" placeholder="ชื่อสินค้า" />
+          </div>
+          <div>
+  <label>หมวดหมู่</label>
+  <input id="p_category" placeholder="เช่น วัตถุดิบ, เครื่องดื่ม" />
+</div>
+          
+          <div>
+            <label>ราคาขาย</label>
+            <input id="p_sell" type="number" step="0.01" />
+          </div>
+          <div>
+            <label>ราคาซื้อ</label>
+            <input id="p_buy" type="number" step="0.01" />
+          </div>
+          <div>
+            <label>จำนวนขั้นต่ำ (เตือนใกล้หมด)</label>
+            <input id="p_min" type="number" />
+          </div>
+        </div>
+        <div class="hr"></div>
+        <div class="toolbar">
+          <button class="btn primary" onclick="saveProduct()">บันทึกสินค้า</button>
+          <div id="p_msg" class="muted"></div>
+        </div>
+        <div class="hr"></div>
+        <h4>รายการสินค้า</h4>
+        <table class="table" id="tbl_products"></table>
+      </section>
+
+      <!-- ----------------- ขาย ----------------- -->
+      <section class="card" data-tab="sale" style="display:none">
+        <h3>ใช้สินค้า</h3>
+        <div class="grid grid-4">
+          <div>
+            <label>สินค้า</label>
+            <select id="s_product"></select>
+          </div>
+
+           <div>
+            <label>จำนวน</label>
+            <input id="s_qty" type="number" />
+          </div>
+          <div>
+
+          <div>
+            <label>ราคาขาย</label>
+            <input id="s_price" type="number" step="0.01" placeholder="ไม่ต้องระบุ" />
+          </div>
+         
+            <label>&nbsp;</label>
+            <div class="toolbar">
+              <button class="btn ghost" onclick="openQrForSelect('s_product')"><span class="material-icons">qr_code_scanner</span></button>
+              <button class="btn" onclick="addSaleItem()">เพิ่มรายการ</button>
+            </div>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <table class="table" id="tbl_sale"></table>
+        <div class="toolbar" style="margin-top:8px">
+          <button class="btn primary" onclick="saveSale()">บันทึกการใช้</button>
+          <div id="sale_msg" class="muted"></div>
+        </div>
+      </section>
+
+      <!-- ----------------- ซื้อ ----------------- -->
+      <section class="card" data-tab="buy" style="display:none">
+        <h3>ซื้อสินค้าเข้าสต๊อก</h3>
+        <div class="grid grid-4">
+          <div>
+            <label>สินค้า</label>
+            <select id="b_product"></select>
+          </div>
+          <div>
+            <label>จำนวน</label>
+            <input id="b_qty" type="number"  />
+          </div>
+          <div>
+          <div>
+            <label>ราคาซื้อ</label>
+            <input id="b_price" type="number" step="0.01"  placeholder="ไม่ต้องระบุ"/>
+          </div>
+          
+            <label>&nbsp;</label>
+            <div class="toolbar">
+              <button class="btn ghost" onclick="openQrForSelect('b_product')"><span class="material-icons">qr_code_scanner</span></button>
+              <button class="btn" onclick="addBuyItem()">เพิ่มรายการ</button>
+            </div>
+          </div>
+        </div>
+        <div class="hr"></div>
+        <table class="table" id="tbl_buy"></table>
+        <div class="toolbar" style="margin-top:8px">
+          <button class="btn primary" onclick="saveBuy()">บันทึกการซื้อ</button>
+          <div id="buy_msg" class="muted"></div>
+        </div>
+      </section>
+
+      <!-- ----------------- รายงานคงเหลือ ----------------- -->
+      <section class="card" data-tab="stock" style="display:none">
+        <h3>รายงานสินค้าคงเหลือ</h3>
+     
+     <div class="toolbar">
+  <div id="stock_cat_chips" class="chipbar"></div> <br>
+  <label><input type="checkbox" id="filter_low" onchange="loadStock()"> เฉพาะใกล้หมด</label>
+
+<div class="chipbar" id="stock_cat_chips"></div>
+
+
+  <select id="sort_stock" onchange="loadStock()">
+    <option value="desc">เรียง: คงเหลือ มาก→น้อย</option>
+    <option value="asc">เรียง: คงเหลือ น้อย→มาก</option>
+  </select>
+
+
+
+</div>
+
+
+
+        <div class="hr"></div>
+        <table class="table" id="tbl_stock"></table>
+      </section>
+
+      <!-- ----------------- รายงานขาย ----------------- -->
+      <section class="card" data-tab="salesrep" style="display:none">
+        <h3>รายงานใช้ (สรุปรายวัน แยกเดือน)</h3>
+        <div class="toolbar">
+          <input id="sales_month" type="month" />
+          <button class="btn" onclick="loadSalesReport()">ดูรายงาน</button>
+        </div>
+        <div class="hr"></div>
+        <table class="table" id="tbl_salesrep"></table>
+      </section>
+
+      <!-- ----------------- รายงานซื้อ ----------------- -->
+      <section class="card" data-tab="buyrep" style="display:none">
+        <h3>รายงานซื้อ (สรุปรายวัน แยกเดือน)</h3>
+        <div class="toolbar">
+          <input id="buy_month" type="month" />
+          <button class="btn" onclick="loadBuyReport()">ดูรายงาน</button>
+        </div>
+        <div class="hr"></div>
+        <table class="table" id="tbl_buyrep"></table>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modal QR -->
+  <div class="modal" id="qr_modal">
+    <div class="inner">
+      <div class="toolbar" style="justify-content:space-between">
+        <strong>สแกน QR Code</strong>
+        <button class="btn ghost" onclick="closeQr()"><span class="material-icons">close</span></button>
+      </div>
+      <div id="qr_reader" style="width:100%;margin-top:8px"></div>
+    </div>
+  </div>
+
+<script>
+  const tabs = [
+        { id:'products', label:'ข้อมูลสินค้า', icon:'category' },
+
+    { id:'sale', label:'ใช้สินค้า', icon:'sell' },
+    { id:'buy', label:'ซื้อของเข้า', icon:'shopping_cart' },
+    { id:'stock', label:'สต็อกคงเหลือ', icon:'inventory' },
+
+    { id:'salesrep', label:'รายงานใช้', icon:'receipt_long' },
+    { id:'buyrep', label:'รายงานซื้อ', icon:'assignment' },
+  ];
+  const state = { products:[], saleItems:[], buyItems:[], qrTarget:null, html5Qr:null };
+
+  function initTabs(){
+    const el = document.getElementById('tabs');
+    el.innerHTML = tabs.map((t,i)=>`<div class="tab ${i===0?'active':''}" onclick="switchTab('${t.id}', this)"><span class="material-icons" style="vertical-align:middle;margin-right:6px">${t.icon}</span>${t.label}</div>`).join('');
+  }
+  function switchTab(id, btn){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('section[data-tab]').forEach(s=>{
+      s.style.display = s.getAttribute('data-tab')===id ? '' : 'none';
+    });
+    if (id==='stock') loadStock();
+  }
+
+  /** PRODUCTS
+   * class='right'>ขาย</th><th class='right'>ซื้อ</th><th
+     <td class='right'>${num(p.sellPrice)}</td>
+     <td class='right'>${num(p.buyPrice)}</td>
+   */
+  function renderProducts(){
+    const t = document.getElementById('tbl_products');
+    t.innerHTML = `
+      <tr><th>รหัส</th><th>ชื่อ</th><th>หมวดหมู่</th><th  class='right'>ขั้นต่ำ</th></tr>
+      ${state.products.map(p=>`
+        <tr>
+          <td>${p.productCode}</td>
+          <td>${p.name||''}</td>
+          <td>${p.category||''}</td>
+       
+          <td class='right'>${p.minQty||0}</td>
+        </tr>`).join('')}
+    `;
+
+    const selS = document.getElementById('s_product');
+    const selB = document.getElementById('b_product');
+    const opts = state.products.map(p=>`<option value="${p.productCode}" data-sell="${p.sellPrice}" data-buy="${p.buyPrice}">${p.productCode} – ${p.name}</option>`).join('');
+    selS.innerHTML = `<option value="">เลือกสินค้า…</option>` + opts;
+    selB.innerHTML = `<option value="">เลือกสินค้า…</option>` + opts;
+  }
+
+  function saveProduct(){
+    const p = {
+      productCode: val('p_code'),
+      name: val('p_name'),
+      unit: val('p_unit'),
+      sellPrice: Number(val('p_sell')||0),
+      buyPrice: Number(val('p_buy')||0),
+      minQty: Number(val('p_min')||0),
+    };
+    if (!p.productCode) return msg('p_msg', 'กรุณากรอกรหัสสินค้า', true);
+    google.script.run.withSuccessHandler(()=>{
+      msg('p_msg', 'บันทึกสินค้าเรียบร้อย');
+      loadProducts();
+      ['p_code','p_name','p_unit','p_sell','p_buy','p_min'].forEach(id=>document.getElementById(id).value='');
+    }).withFailureHandler(e=>msg('p_msg', e.message||String(e), true)).saveProduct(p);
+  }
+
+  function loadProducts(){
+    google.script.run.withSuccessHandler(res=>{
+      state.products = res || [];
+      renderProducts();
+    }).listProducts();
+  }
+
+  /** SALES */
+  function addSaleItem(){
+    const code = val('s_product');
+    if (!code) return;
+    const p = state.products.find(x=>String(x.productCode)===String(code));
+    const price = Number(val('s_price')||p?.sellPrice||0);
+    const qty = Number(val('s_qty')||0);
+    if (!(qty>0)) return;
+    state.saleItems.push({ productCode:code, name:p?.name||'', unit:p?.unit||'', price, qty });
+    renderSaleItems();
+    ['s_qty'].forEach(id=>document.getElementById(id).value='');
+  }
+function renderSaleItems(){
+const t = document.getElementById('tbl_sale');
+t.innerHTML = `
+<tr><th>สินค้า</th><th class='right'>จำนวน</th></tr>
+${state.saleItems.map((it,i)=>`
+<tr>
+<td>${it.productCode} – ${it.name}</td>
+<td class='right'>${it.qty}</td>
+</tr>`).join('')}
+<tr><td class='right'><strong>รวม</strong></td><td class='right'><strong>${state.saleItems.reduce((s,x)=>s+x.qty,0)}</strong></td></tr>
+`;
+}
+  function delSale(i){ state.saleItems.splice(i,1); renderSaleItems(); }
+  function saveSale(){
+    if (!state.saleItems.length) return msg('sale_msg','ยังไม่มีรายการ',true);
+    google.script.run.withSuccessHandler(res=>{
+      msg('sale_msg', `บันทึกแล้ว เลขที่เอกสาร: ${res.docNo} | ยอดขาย: ${num(res.total)}`);
+      state.saleItems=[]; renderSaleItems();
+    }).withFailureHandler(e=>msg('sale_msg', e.message||String(e), true)).createSale({items:state.saleItems});
+  }
+
+  /** PURCHASES */
+  function addBuyItem(){
+    const code = val('b_product');
+    if (!code) return;
+    const p = state.products.find(x=>String(x.productCode)===String(code));
+    const price = Number(val('b_price')||p?.buyPrice||0);
+    const qty = Number(val('b_qty')||0);
+    if (!(qty>0)) return;
+    state.buyItems.push({ productCode:code, name:p?.name||'', unit:p?.unit||'', price, qty });
+    renderBuyItems();
+    ['b_qty'].forEach(id=>document.getElementById(id).value='');
+  }
+function renderBuyItems(){
+const t = document.getElementById('tbl_buy');
+t.innerHTML = `
+<tr><th>สินค้า</th><th class='right'>จำนวน</th></tr>
+${state.buyItems.map((it,i)=>`
+<tr>
+<td>${it.productCode} – ${it.name}</td>
+<td class='right'>${it.qty}</td>
+</tr>`).join('')}
+<tr><td class='right'><strong>รวม</strong></td><td class='right'><strong>${state.buyItems.reduce((s,x)=>s+x.qty,0)}</strong></td></tr>
+`;
+}
+  function delBuy(i){ state.buyItems.splice(i,1); renderBuyItems(); }
+  function saveBuy(){
+    if (!state.buyItems.length) return msg('buy_msg','ยังไม่มีรายการ',true);
+    google.script.run.withSuccessHandler(res=>{
+      msg('buy_msg', `บันทึกแล้ว เลขที่เอกสาร: ${res.docNo} | ยอดซื้อ: ${num(res.total)}`);
+      state.buyItems=[]; renderBuyItems();
+    }).withFailureHandler(e=>msg('buy_msg', e.message||String(e), true)).createPurchase({items:state.buyItems});
+  }
+
+  /** STOCK REPORT */
+  function loadStock(){
+    const lowOnly = document.getElementById('filter_low').checked;
+    const sort = document.getElementById('sort_stock').value;
+    google.script.run.withSuccessHandler(rows=>{
+      const t = document.getElementById('tbl_stock');
+      t.innerHTML = `
+        <tr><th>รหัส</th><th>ชื่อ</th><th>หมวดหมู่</th><th class='right'>คงเหลือ</th><th class='right'>ขั้นต่ำ</th><th>สถานะ</th></tr>
+        ${rows.map(r=>`
+          <tr>
+            <td>${r.productCode}</td>
+            <td>${r.name||''}</td>
+            <td>${r.category||''}</td>
+            <td class='right'>${r.stock}</td>
+            <td class='right'>${r.minQty}</td>
+            <td>${r.low?'<span class="pill low">ใกล้หมด</span>':''}</td>
+          </tr>`).join('')}
+      `;
+    }).getStockReport({lowOnly, sort});
+  }
+
+  /** SALES REPORT */
+function loadSalesReport(){
+const m = document.getElementById('sales_month').value || null;
+google.script.run.withSuccessHandler(rep=>{
+const rows = rep.days || [];
+const t = document.getElementById('tbl_salesrep');
+const totalQty = rows.reduce((s,x)=>s+x.qty,0);
+t.innerHTML = `
+<tr><th>วันที่</th><th class='right'>จำนวน</th></tr>
+${rows.map(r=>`<tr><td>${r.date}</td><td class='right'>${r.qty}</td></tr>`).join('')}
+<tr><td class='right'><strong>รวมเดือน ${rep.month}</strong></td><td class='right'><strong>${totalQty}</strong></td></tr>
+`;
+}).getSalesReport(m);
+}
+
+  /** PURCHASE REPORT */
+function loadBuyReport(){
+const m = document.getElementById('buy_month').value || null;
+google.script.run.withSuccessHandler(rep=>{
+const rows = rep.days || [];
+const t = document.getElementById('tbl_buyrep');
+const totalQty = rows.reduce((s,x)=>s+x.qty,0);
+t.innerHTML = `
+<tr><th>วันที่</th><th class='right'>จำนวน</th></tr>
+${rows.map(r=>`<tr><td>${r.date}</td><td class='right'>${r.qty}</td></tr>`).join('')}
+<tr><td class='right'><strong>รวมเดือน ${rep.month}</strong></td><td class='right'><strong>${totalQty}</strong></td></tr>
+`;
+}).getPurchaseReport(m);
+}
+
+  /** Helpers */
+  function val(id){ return document.getElementById(id).value.trim(); }
+  function msg(id, text, isErr){ const el=document.getElementById(id); el.textContent=text; el.style.color=isErr?'#ef4444':'#6b7280'; }
+  function num(n){ return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+  // Auto price update when product changes
+  document.addEventListener('change', e=>{
+    if (e.target.id==='s_product'){
+      const opt = e.target.selectedOptions[0];
+      document.getElementById('s_price').value = opt ? opt.dataset.sell : '';
+    }
+    if (e.target.id==='b_product'){
+      const opt = e.target.selectedOptions[0];
+      document.getElementById('b_price').value = opt ? opt.dataset.buy : '';
+    }
+  });
+
+  /** QR Scanner */
+  function openQr(inputId){ state.qrTarget = inputId; openQrModal(); }
+  function openQrForSelect(selectId){ state.qrTarget = selectId; openQrModal(); }
+  function openQrModal(){
+    document.getElementById('qr_modal').style.display='flex';
+    const divId = 'qr_reader';
+    const qrElem = document.getElementById(divId);
+    qrElem.innerHTML='';
+    state.html5Qr = new Html5Qrcode(divId);
+    Html5Qrcode.getCameras().then(devices=>{
+      const camId = devices && devices.length ? devices[0].id : null;
+      state.html5Qr.start(
+        camId,
+        { fps:10, qrbox: { width: 250, height: 250 } },
+        decoded => { onQr(decoded); },
+        err => {}
+      );
+    });
+  }
+  function onQr(text){
+    if (!state.qrTarget) return;
+    const el = document.getElementById(state.qrTarget);
+    if (!el) return;
+    if (el.tagName==='SELECT'){
+      // try match productCode
+      const val = text.trim();
+      const opt = Array.from(el.options).find(o=>String(o.value)===val);
+      if (opt) { el.value = val; el.dispatchEvent(new Event('change')); }
+      else alert('ไม่พบรหัสสินค้านี้ในรายการ');
+    } else {
+      el.value = text.trim();
+    }
+    closeQr();
+  }
+  function closeQr(){
+    document.getElementById('qr_modal').style.display='none';
+    if (state.html5Qr){ state.html5Qr.stop().then(()=>{ state.html5Qr.clear(); }); }
+    state.qrTarget=null;
+  }
+
+  // boot
+  window.addEventListener('load', ()=>{
+    initTabs();
+    loadProducts();
+    const now = new Date();
+    const ym = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    document.getElementById('sales_month').value = ym;
+    document.getElementById('buy_month').value = ym;
+    renderSaleItems();
+    renderBuyItems();
+  });
+
+  function renderProducts(){
+  const t = document.getElementById('tbl_products');
+  t.innerHTML = `
+    <tr><th>รหัส</th><th>ชื่อ</th><th>หมวดหมู่</th><th class='right'>ขั้นต่ำ</th></tr>
+    ${state.products.map(p=>`
+      <tr>
+        <td>${p.productCode}</td>
+        <td>${p.name||''}</td>
+        <td>${p.category||''}</td>
+        <td class='right'>${p.minQty||0}</td>
+      </tr>`).join('')}
+  `;
+
+  // Group by category
+  const grouped = {};
+  for (const p of state.products){
+    if (!grouped[p.category]) grouped[p.category] = [];
+    grouped[p.category].push(p);
+  }
+  const selS = document.getElementById('s_product');
+  const selB = document.getElementById('b_product');
+  let opts = '';
+  for (const cat in grouped){
+    opts += `<optgroup label="${cat||'อื่นๆ'}">`;
+    opts += grouped[cat].map(p=>`<option value="${p.productCode}">${p.productCode} – ${p.name}</option>`).join('');
+    opts += '</optgroup>';
+  }
+  selS.innerHTML = `<option value="">เลือกสินค้า…</option>` + opts;
+  selB.innerHTML = `<option value="">เลือกสินค้า…</option>` + opts;
+}
+function saveProduct(){
+  const p = {
+    productCode: val('p_code'),
+    name: val('p_name'),
+    category: val('p_category'),
+    sellPrice: Number(val('p_sell')||0),
+    buyPrice: Number(val('p_buy')||0),
+    minQty: Number(val('p_min')||0),
+  };
+  if (!p.productCode) return msg('p_msg', 'กรุณากรอกรหัสสินค้า', true);
+  google.script.run.withSuccessHandler(()=>{
+    msg('p_msg', 'บันทึกสินค้าเรียบร้อย');
+    loadProducts();
+    ['p_code','p_name','p_category','p_sell','p_buy','p_min'].forEach(id=>document.getElementById(id).value='');
+  }).withFailureHandler(e=>msg('p_msg', e.message||String(e), true)).saveProduct(p);
+}
+
+
+function loadStock(){
+  const lowOnly = document.getElementById('filter_low')?.checked || false;
+  const sort    = document.getElementById('sort_stock')?.value   || 'desc';
+
+  google.script.run.withSuccessHandler(rows=>{
+    // ทำความสะอาด category
+    rows.forEach(r => r.category = String(r.category ?? '').trim());
+
+    // รวมหมวดไม่ซ้ำ + เรียงตามตัวอักษร
+    const categories = [...new Set(rows.map(r => r.category).filter(c => c.length))]
+      .sort((a,b)=> a.localeCompare(b,'th'));  // เรียงแบบไทยสวยขึ้น
+
+    // วาดปุ่มหมวด
+    const wrap = document.getElementById('stock_cat_chips');
+    if (wrap){
+      if (!categories.includes(stockCat)) stockCat = "";
+      wrap.innerHTML =
+        `<div class="chip ${stockCat===''?'active':''}" data-cat="" onclick="setStockCategory('')">ทุกหมวดหมู่</div>` +
+        categories.map(c => `<div class="chip ${stockCat===c?'active':''}" data-cat="${c}" onclick="setStockCategory('${c.replace(/'/g,"&#39;")}')">${c}</div>`).join('');
+    }
+
+    // กรองตามหมวด/เฉพาะใกล้หมด + เรียง
+    let data = stockCat ? rows.filter(r => r.category === stockCat) : rows;
+    if (lowOnly) data = data.filter(r => r.low);
+    data.sort((a,b) => sort==='asc' ? a.stock-b.stock : b.stock-a.stock);
+
+    // วาดตาราง (คอลัมน์หมวดหมู่จะแสดงค่าที่ตัดช่องว่างแล้ว)
+    document.getElementById('tbl_stock').innerHTML = `
+      <tr><th>รหัส</th><th>ชื่อ</th><th>หมวดหมู่</th>
+          <th class="right">คงเหลือ</th><th class="right">ขั้นต่ำ</th><th>สถานะ</th></tr>
+      ${data.map(r=>`
+        <tr>
+          <td>${r.productCode}</td>
+          <td>${r.name||''}</td>
+          <td>${r.category||''}</td>
+          <td class="right">${r.stock}</td>
+          <td class="right">${r.minQty}</td>
+          <td>${r.low ? '<span class="pill low">ใกล้หมด</span>' : ''}</td>
+        </tr>`).join('')}
+    `;
+  }).getStockReport({ lowOnly, sort }); // ดึงทั้งหมดมาก่อน แล้วกรองฝั่งหน้าเว็บ
+}
+
+
+let stockCat = ""; // หมวดที่เลือกในหน้าคงเหลือ
+
+function setStockCategory(cat){
+  stockCat = cat;
+  // toggle active ให้ปุ่ม
+  const wrap = document.getElementById('stock_cat_chips');
+  if (wrap){
+    [...wrap.querySelectorAll('.chip')].forEach(ch=>{
+      ch.classList.toggle('active', ch.dataset.cat === cat);
+    });
+  }
+  loadStock();
+}
+
+
+</script>
+
+
+</body>
+</html>
